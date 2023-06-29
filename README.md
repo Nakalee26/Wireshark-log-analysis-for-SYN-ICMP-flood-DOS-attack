@@ -1,4 +1,4 @@
-<h1>Identification of the type of attack</h1>
+<h1>Identification of the type of attack - SYN Flood DOS Attack</h1>
 <p style="font-size: 15px;">Upon analyzing the Wire shark log of HTTP and TCP traffic, it was observed that requests were being made via the transport layer protocol to initiate a TCP handshake from an unidentified IP address outside employee’s subnet address.</br> Although the IP address could potentially belong to a customer, the nature of the requests exhibited abnormal behaviour. Even after establishing a connection, the suspected IP address continued to send multiple SYN packets over TCP to the web server. These packets originated from a single source IP address and were numerous, indicating a classic SYN flood Denial of Service Attack.</p>
 
 <div align="center">
@@ -25,10 +25,13 @@ In the next 20 rows, the log begins to reflect the struggle the web server is ha
 </br>
 
 As you scroll through the rest of the log, you will notice the web server stops responding to  legitimate employee visitor traffic. The visitors receive more error messages indicating that they cannot establish or maintain a connection to the web server. From log item number 125 on, the web server stops responding. The only items logged at that point are from the attack. As there is only one IP address attacking the web server, you can assume this is a direct DoS SYN flood attack.
+</br>
+</br>
+<h1>Identification of the type of attack - ICMP Flood DOS Attack</h1>
 
 DNS AND ICMP TCPDUMP LOG DATA
 
-
+```plaintext
 13:24:32.192571 IP 192.51.100.15.52444 > 203.0.113.2.domain: 35084+ A? yummyrecipesforme.com. (24)
 
 13:24:36.098564 IP 203.0.113.2 > 192.51.100.15: ICMP 203.0.113.2 
@@ -43,7 +46,15 @@ udp port 53 unreachable length 320
 
 13:28:50.022967 IP 203.0.113.2 > 192.51.100.15: ICMP 203.0.113.2 
 udp port 53 unreachable length 150
+```
 
 
-   
+The network analyzer logs indicate that the DNS server's IP address 203.0.113.2 is unable to resolve client requests for the web domain yummyrecipesforme.com via UDP port 53, suggesting an unreachable destination. This situation raises concerns about the state of the DNS server as it appears to be down.
+
+<h1>Scenerio Analysis and Re-mediation</h1>
+
+At 1:23pm, multiple customers have reported being unable to access our company website. Upon investigation, I confirmed encountering the error "destination port unreachable" while attempting to load the page. Using a network analyzer tool called tcpdump, I observed a significant influx of packets. Analysis revealed that when sending UDP packets, I received an ICMP response with the error message "udp port 53 unreachable." This indicates that port 53, responsible for DNS traffic, is not accessible. 
+</br>
+<p></p>
+Our current focus is on identifying the root cause of this issue and restoring DNS server resolution for the website. Our next steps involve examining the firewall configuration to check for port 53 blockage and coordinating with the DNS server's system administrator to investigate potential DOS attacks or DNS misconfigurations.
 
